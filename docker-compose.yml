@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: qualair_db
+    environment:
+      POSTGRES_USER: yasminedri
+      POSTGRES_PASSWORD: qualair
+      POSTGRES_DB: qualair_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # volume persistant
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_qualair
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@qualair.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:
