@@ -1,4 +1,4 @@
-name: CI/CD QualAir
+name: CI QualAir
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-test-deploy:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,15 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
+          pip install pytest
 
-      - name: Run smoke tests
-        run: |
-          echo "Vérification de la connexion PostgreSQL"
-          python tests/smoke_db.py || echo "Tests basiques non critiques"
-
-      - name: Deploy with Docker
-        run: |
-          chmod +x deploy.sh
-          ./deploy.sh
- 
+      - name: Run tests
+        run: pytest tests/
