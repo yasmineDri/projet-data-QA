@@ -1,0 +1,7 @@
+dataset,source,output,rows_before,rows_after,removed,dupes_before_mesures,dupes_after_mesures
+indices_atmo,raw/atmo/indices_atmo.csv,clean/indices_atmo_clean.csv,248,248,0,0,0
+emissions_par_secteur,raw/atmo/emissions_par_secteur.csv,clean/emissions_par_secteur_clean.csv,85,85,0,0,0
+indices_pollens,raw/atmo/indices_pollens.csv,clean/indices_pollens_clean.csv,24,24,0,0,0
+episodes_3jours,raw/atmo/episodes_3jours.csv,clean/episodes_3jours_clean.csv,24,24,0,0,0
+mesure_journaliere,raw/atmo/mesures_horaires_atmosud2.csv,clean/mesure_journaliere_clean.csv,73059,72129,930,0,0
+meteo,raw/meteo/meteo.csv,clean/meteo_clean.csv,5952,5952,0,0,0

@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data   # volume persistant
+      - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./data:/data
 
@@ -27,5 +27,44 @@ services:
       - postgres
     restart: unless-stopped
 
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: airflow_qualair
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://yasminedri:qualair@qualair_db:5432/qualair_db
+      AIRFLOW_DATA_DIR: /data    
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./data:/data
+      - ./scripts:/opt/airflow/scripts
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: >
+      bash -c "airflow db init &&
+               airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@qualair.fr --password admin &&
+               airflow webserver & airflow scheduler"
+
+# ---------- SPARK CLUSTER ----------
+  spark:
+    image: bitnami/spark:3.5
+    container_name: spark_qualair
+    environment:
+      SPARK_MODE: client
+      SPARK_NO_DAEMONIZE: "true"
+      IVY_HOME: /tmp/.ivy2
+      SPARK_LOCAL_DIRS: /tmp
+      HADOOP_USER_NAME: root
+      HADOOP_CONF_DIR: /dev/null
+    volumes:
+      - ./jobs/spark:/opt/jobs
+      - ./data:/data
+    command: [ "bash", "-lc", "sleep infinity" ]
+
+
 volumes:
   pgdata:
+
+

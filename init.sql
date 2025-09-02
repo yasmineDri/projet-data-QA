@@ -1,62 +1,84 @@
 -- =============================================
--- Table mesures_journaliere
+-- Table ville
 -- =============================================
-DROP TABLE IF EXISTS mesures_journaliere;
+DROP TABLE IF EXISTS ville;
 
-CREATE TABLE mesures_polluants (
-    date_debut TIMESTAMP WITH TIME ZONE NOT NULL,
-    valeur FLOAT NOT NULL,
-    unite TEXT NOT NULL,
+CREATE TABLE ville (
+    id_ville SERIAL PRIMARY KEY,
+    code_insee VARCHAR(10) UNIQUE NOT NULL,
+    nom_commune TEXT NOT NULL,
+    lon FLOAT NOT NULL,
+    lat FLOAT NOT NULL
+);
+
+-- =============================================
+-- Table station
+-- =============================================
+DROP TABLE IF EXISTS station;
+
+CREATE TABLE station (
+    id_station INTEGER PRIMARY KEY,
     nom_station TEXT NOT NULL,
-    id_station TEXT NOT NULL,
-    label_polluant TEXT NOT NULL,
-    polluant_id INTEGER NOT NULL,
-    temporalite TEXT NOT NULL,
-    validation TEXT,
-    PRIMARY KEY (date_debut, id_station, polluant_id)
+    longitude FLOAT NOT NULL,
+    latitude FLOAT NOT NULL,
+    code_insee VARCHAR(10) NOT NULL,
+    FOREIGN KEY (code_insee) REFERENCES ville(code_insee)
 );
 
-CREATE INDEX idx_mesures_polluants_station ON mesures_polluants (id_station);
+DROP TABLE IF EXISTS mesure_journaliere;
+
+CREATE TABLE mesure_journaliere (
+    id_station INTEGER NOT NULL,
+    code_station TEXT NOT NULL,
+    nom_station TEXT NOT NULL,
+    adresse TEXT,
+    polluant TEXT NOT NULL,
+    datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+    code_polluant INTEGER NOT NULL,
+    longitude FLOAT NOT NULL,
+    latitude FLOAT NOT NULL,
+    valeur FLOAT,
+    code_indice FLOAT,
+    couleur_indice TEXT,
+    qualificatif TEXT,
+    date TEXT NOT NULL,
+    heure TEXT NOT NULL,
+    PRIMARY KEY (id_station, datetime, polluant)
+);
+
 
 -- =============================================
--- Table indices_atmo
+-- Table indice_atmo
 -- =============================================
-DROP TABLE IF EXISTS indices_atmo;
+DROP TABLE IF EXISTS indice_atmo;
 
-CREATE TABLE indices_atmo (
-    aasqa INTEGER NOT NULL,
-    date_maj TIMESTAMP WITH TIME ZONE NOT NULL,
-    code_no2 INTEGER NOT NULL,
-    code_o3 INTEGER NOT NULL,
-    code_pm10 INTEGER NOT NULL,
-    code_pm25 FLOAT NOT NULL,
-    code_qual INTEGER NOT NULL,
-    code_so2 INTEGER NOT NULL,
-    code_zone INTEGER NOT NULL,
-    coul_qual TEXT NOT NULL,
-    date_dif DATE NOT NULL,
-    date_ech DATE NOT NULL,
-    epsg_reg INTEGER,
-    lib_qual TEXT NOT NULL,
-    lib_zone TEXT NOT NULL,
-    source TEXT NOT NULL,
-    type_zone TEXT NOT NULL,
-    x_reg FLOAT,
-    x_wgs84 FLOAT,
-    y_reg FLOAT,
-    y_wgs84 FLOAT,
-    gml_id2 TEXT,
-    PRIMARY KEY (aasqa, date_maj, code_zone)
+CREATE TABLE indice_atmo (
+    code_insee VARCHAR(10) NOT NULL,
+    date_echeance DATE NOT NULL,
+    indice_no2 INTEGER,
+    indice_o3 INTEGER,
+    indice_pm10 INTEGER,
+    indice_pm25 FLOAT,
+    indice_qualite_air INTEGER,
+    couleur_qualite TEXT,
+    date_diffusion DATE,
+    date_mise_a_jour TIMESTAMP WITH TIME ZONE,
+    libelle_qualite TEXT,
+    type_zone TEXT,
+    lon FLOAT,
+    lat FLOAT,
+    PRIMARY KEY (code_insee, date_echeance),
+    FOREIGN KEY (code_insee) REFERENCES ville(code_insee)
 );
 
 -- =============================================
--- Table indices_pollens
+-- Table indice_pollen
 -- =============================================
-DROP TABLE IF EXISTS indices_pollens;
+DROP TABLE IF EXISTS indice_pollen;
 
-CREATE TABLE indices_pollens (
-    aasqa INTEGER NOT NULL,
-    date_maj TIMESTAMP WITH TIME ZONE NOT NULL,
+CREATE TABLE indice_pollen (
+    code_insee VARCHAR(10) NOT NULL,
+    date_echeance DATE NOT NULL,
     alerte INTEGER,
     code_ambr INTEGER,
     code_arm INTEGER,
@@ -64,61 +86,75 @@ CREATE TABLE indices_pollens (
     code_boul INTEGER,
     code_gram INTEGER,
     code_oliv INTEGER,
-    code_zone INTEGER NOT NULL,
     conc_ambr FLOAT,
     conc_arm FLOAT,
     conc_aul FLOAT,
     conc_boul FLOAT,
     conc_gram FLOAT,
     conc_oliv FLOAT,
-    date_dif DATE,
-    date_ech DATE,
-    lib_qual TEXT,
-    lib_zone TEXT NOT NULL,
-    type_zone TEXT,
     pollen_resp TEXT,
     source TEXT,
-    code_qual INTEGER,
-    name TEXT,
-    PRIMARY KEY (aasqa, date_maj, code_zone)
+    PRIMARY KEY (code_insee, date_echeance),
+    FOREIGN KEY (code_insee) REFERENCES ville(code_insee)
+);
+
+
+-- =============================================
+-- Table trafic_synthetique
+-- =============================================
+DROP TABLE IF EXISTS trafic_synthetique;
+
+CREATE TABLE trafic_synthetique (
+    ville TEXT NOT NULL,
+    date DATE NOT NULL,
+    heure TIME NOT NULL,
+    trafic FLOAT NOT NULL,
+    PRIMARY KEY (ville, date, heure)
 );
 
 -- =============================================
--- Table emissions_par_secteur
+-- Table meteo
 -- =============================================
-DROP TABLE IF EXISTS emissions_par_secteur;
+DROP TABLE IF EXISTS meteo;
 
-CREATE TABLE emissions_par_secteur (
-    name TEXT NOT NULL,
-    annee INTEGER NOT NULL,
-    lib_commune TEXT NOT NULL,
-    code_commune TEXT NOT NULL,
-    polluant TEXT NOT NULL,
-    valeur FLOAT NOT NULL,
-    unite TEXT NOT NULL,
-    lib_secteur TEXT NOT NULL,
-    code_secteur INTEGER NOT NULL,
-    PRIMARY KEY (name, annee, code_commune, polluant)
+CREATE TABLE meteo (
+    ville TEXT NOT NULL,
+    time TIMESTAMP WITH TIME ZONE NOT NULL,
+    temperature_2m FLOAT,
+    relative_humidity_2m FLOAT,
+    precipitation FLOAT,
+    windspeed_10m FLOAT,
+    PRIMARY KEY (ville, time)
 );
 
-CREATE INDEX idx_emissions_secteur ON emissions_par_secteur (lib_secteur);
+-- =============================================
+-- Table emission_par_secteur
+-- =============================================
+DROP TABLE IF EXISTS emission_par_secteur;
+
+CREATE TABLE emission_par_secteur (
+    region TEXT NOT NULL,
+    date_maj DATE,
+    superficie FLOAT,
+    population INTEGER,
+    pm25 FLOAT,
+    pm10 FLOAT,
+    nox FLOAT,
+    ges FLOAT,
+    code_pcaet TEXT,
+    code TEXT,
+);
 
 -- =============================================
--- Table episodes_3jours
+-- Table episode_3_j
 -- =============================================
-DROP TABLE IF EXISTS episodes_3jours;
+DROP TABLE IF EXISTS episode_3_j;
 
-CREATE TABLE episodes_3jours (
-    aasqa INTEGER NOT NULL,
-    date_maj TIMESTAMP WITH TIME ZONE NOT NULL,
-    etat TEXT NOT NULL,
-    lib_zone TEXT NOT NULL,
-    lib_pol TEXT NOT NULL,
-    date_ech DATE NOT NULL,
-    date_dif DATE NOT NULL,
-    code_zone INTEGER NOT NULL,
+CREATE TABLE episode_3_j (
+    code_zone VARCHAR(5) NOT NULL,
     code_pol INTEGER NOT NULL,
-    PRIMARY KEY (aasqa, date_maj, code_zone, code_pol)
+    lib_pol TEXT,
+    date_echeance DATE NOT NULL,
+    etat TEXT,
+    PRIMARY KEY (code_zone, code_pol, date_echeance)
 );
-
-CREATE INDEX idx_episodes_zone ON episodes_3jours (code_zone);
